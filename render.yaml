@@ -3,23 +3,24 @@ services:
   - type: web
     name: smart-campus-backend
     runtime: docker
-    region: oregon # Web services can have a region
     plan: free
+    region: oregon
     rootDir: backend
     envVars:
       - key: ALLOWED_ORIGINS
         fromService:
-          type: static_site
+          type: static
           name: smart-campus-frontend
           property: host
 
   # Frontend Static Site (React/Vite)
-  - type: static_site
+  - type: web
     name: smart-campus-frontend
-    # Static sites do not have a region or a plan field in the Blueprint
+    runtime: static
     rootDir: frontend
     buildCommand: "npm install && npm run build"
-    publishDir: "dist"
+    staticPublishPath: "dist"
+    # NOTE: Static sites in Render blueprints do not support 'plan' or 'region' fields.
     envVars:
       - key: VITE_API_BASE_URL
         fromService:
