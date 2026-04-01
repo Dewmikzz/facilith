@@ -1,0 +1,28 @@
+rules_version = '2';
+
+// ── FIREBASE STORAGE RULES ──────────────────────────────────────
+// Copy and paste these rules into your Firebase Console:
+// Go to: Build -> Storage -> Rules
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Allow authenticated users to upload evidence for tickets
+    // Images are stored in path: tickets/{uid}/timestamp_filename.jpg
+    match /tickets/{uid}/{allPaths=**} {
+      // Any logged-in user can VIEW the images (for Admins & Technicians)
+      allow read: if request.auth != null;
+      
+      // Users can ONLY upload/write to their own folder
+      allow write: if request.auth != null 
+                  && request.auth.uid == uid
+                  && request.resource.size < 5 * 1024 * 1024   // 5MB limit
+                  && request.resource.contentType.matches('image/.*'); // Images only
+    }
+
+    // Default: Deny everything else
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,21 @@
+# Node
+node_modules/
+dist/
+.env
+
+# Java/Maven
+target/
+*.class
+*.jar
+.mvn/
+mvnw
+mvnw.cmd
+
+# Firebase
+firebase-service-account.json
+
+# OS/IDE
+.DS_Store
+.vscode/
+.idea/
+*.log

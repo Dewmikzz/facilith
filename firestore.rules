@@ -1,0 +1,67 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: check if the calling user is authenticated
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Helper: get the role stored in Firestore for the calling user, with safe fallback
+    function getRole() {
+      // Safely check if the user document exists first to avoid evaluation errors
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) 
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role 
+        : 'USER';
+    }
+
+    function isAdmin()      { return isAuth() && getRole() == 'ADMIN'; }
+    function isTechnician() { return isAuth() && getRole() == 'TECHNICIAN'; }
+    function isUser()       { return isAuth() && getRole() == 'USER'; }
+
+    // ── USERS ────────────────────────────────────────────────────────
+    match /users/{uid} {
+      allow read:   if isAuth();                  // anyone logged in can read profiles
+      allow create: if isAuth() && request.auth.uid == uid;  // users create own profile
+      allow update: if isAdmin() || request.auth.uid == uid; // admin or self can update
+      allow delete: if isAdmin();
+    }
+
+    // ── RESOURCES ─────────────────────────────────────────────────────
+    match /resources/{docId} {
+      allow read:   if isAuth();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── BOOKINGS ──────────────────────────────────────────────────────
+    match /bookings/{docId} {
+      allow read:   if isAuth();   // users see all (filtered by userId in query) ; admins see all
+      allow create: if isAuth();   // any authenticated user can make a booking
+      allow update: if isAdmin() || (isAuth() && resource.data.userId == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    // ── TICKETS ───────────────────────────────────────────────────────
+    match /tickets/{docId} {
+      allow read:   if isAuth();
+      allow create: if isAuth();
+      allow update: if isAdmin() || isTechnician() || (isAuth() && resource.data.reporterId == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    // ── COMMENTS ─────────────────────────────────────────────────────
+    match /comments/{docId} {
+      allow read:   if isAuth();
+      allow create: if isAuth();
+      allow update, delete: if isAdmin() || (isAuth() && resource.data.userId == request.auth.uid);
+    }
+
+    // ── NOTIFICATIONS ─────────────────────────────────────────────────
+    match /notifications/{docId} {
+      allow read:   if isAuth() && resource.data.userId == request.auth.uid;
+      allow create: if isAuth();   // backend creates notifications for others
+      allow update: if isAuth() && resource.data.userId == request.auth.uid; // mark as read
+      allow delete: if isAdmin();
+    }
+  }
+}
