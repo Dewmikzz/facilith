@@ -9,7 +9,7 @@ services:
     envVars:
       - key: ALLOWED_ORIGINS
         fromService:
-          type: static
+          type: web
           name: smart-campus-frontend
           property: host
 
@@ -20,7 +20,6 @@ services:
     rootDir: frontend
     buildCommand: "npm install && npm run build"
     staticPublishPath: "dist"
-    # NOTE: Static sites in Render blueprints do not support 'plan' or 'region' fields.
     envVars:
       - key: VITE_API_BASE_URL
         fromService:
