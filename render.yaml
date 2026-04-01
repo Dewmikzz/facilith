@@ -1,13 +1,11 @@
 services:
-  # Backend Web Service (Spring Boot)
+  # Backend Web Service (Spring Boot via Docker)
   - type: web
     name: smart-campus-backend
-    env: java
+    runtime: docker
     region: oregon
     plan: free
     rootDir: backend
-    buildCommand: "./mvnw clean package -DskipTests"
-    startCommand: "java -jar target/backend-0.0.1-SNAPSHOT.jar"
     envVars:
       - key: ALLOWED_ORIGINS
         fromService:
