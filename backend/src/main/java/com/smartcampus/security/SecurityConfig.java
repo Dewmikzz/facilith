@@ -42,13 +42,17 @@ public class SecurityConfig {
 
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
-        String allowedOrigins = System.getenv("ALLOWED_ORIGINS");
-        if (allowedOrigins == null || allowedOrigins.isEmpty()) {
-            allowedOrigins = "http://localhost:5173";
+        String allowedOriginsEnv = System.getenv("ALLOWED_ORIGINS");
+        if (allowedOriginsEnv == null || allowedOriginsEnv.isEmpty()) {
+            allowedOriginsEnv = "http://localhost:5173";
         }
         
+        List<String> origins = java.util.Arrays.stream(allowedOriginsEnv.split(","))
+                .map(o -> o.startsWith("http") ? o : "https://" + o)
+                .toList();
+        
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(allowedOrigins.split(",")));
+        config.setAllowedOrigins(origins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

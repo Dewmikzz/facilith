@@ -2,7 +2,7 @@ services:
   # Backend Web Service (Spring Boot)
   - type: web
     name: smart-campus-backend
-    runtime: java
+    env: java
     region: oregon
     plan: free
     rootDir: backend
@@ -13,13 +13,12 @@ services:
         fromService:
           type: web
           name: smart-campus-frontend
-          property: url
+          property: host
 
   # Frontend Static Site (React/Vite)
   - type: web
     name: smart-campus-frontend
     runtime: static
-    region: oregon
     plan: free
     rootDir: frontend
     buildCommand: "npm install && npm run build"
@@ -29,7 +28,7 @@ services:
         fromService:
           type: web
           name: smart-campus-backend
-          property: url
+          property: host
     routes:
       - type: rewrite
         source: "/*"
