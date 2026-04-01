@@ -2,7 +2,7 @@ services:
   # Backend Web Service (Spring Boot)
   - type: web
     name: smart-campus-backend
-    env: java
+    runtime: java
     region: oregon
     plan: free
     rootDir: backend
@@ -11,19 +11,19 @@ services:
     envVars:
       - key: ALLOWED_ORIGINS
         fromService:
-          type: static
+          type: web
           name: smart-campus-frontend
           property: url
-      # You will need to add FIREBASE_SERVICE_ACCOUNT_JSON as a secret file or env var in Render Dashboard
 
   # Frontend Static Site (React/Vite)
-  - type: static
+  - type: web
     name: smart-campus-frontend
+    runtime: static
     region: oregon
     plan: free
     rootDir: frontend
     buildCommand: "npm install && npm run build"
-    publishDir: "dist"
+    staticPublishPath: "dist"
     envVars:
       - key: VITE_API_BASE_URL
         fromService:
